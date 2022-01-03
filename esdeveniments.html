@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <table id="taula">
+        <tr> <td id="1-1">A</td> <td id="1-2">B</td></tr>
+        <tr> <td id="2-1">C</td> <td id="2-2">D</td></tr>
+    </table>
+</body>
+<script>
+        document.getElementById('taula').addEventListener('click', (ev)=>{
+            console.log(ev.target.id);
+        })
+</script>
+</html>

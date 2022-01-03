@@ -1,0 +1,17 @@
+tr > * {
+    border:2px black solid;
+    width:100px;
+    height:100px;
+}
+
+td > *{
+    display: block;
+      margin:auto;      
+}
+
+#tauler{
+    width:500px;
+    height:500px;
+    background-color: floralwhite;
+}
+
