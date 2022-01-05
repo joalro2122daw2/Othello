@@ -6,16 +6,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="./estil.css" type="text/css">
     <title>Othello Login</title>
-    <h1>Login de Othello</h1>
+    <h1>Login d'Othello</h1>
+    <!--<script src="./Othello_login.js" type="text/javascript"></script>-->
 </head>
 <body>
     <div id="formulario">
-        <form id="login" action="http://localhost:8888/" method="get">
-            <label for="nombreusu">Nombre de usuario</label>
+        <form id="login" action="http://localhost:8888/validarUser" method="post">
+            <label for="nombreusu">Nom d'usuari</label>
             <input autofocus type="text" id="nombreusu" name="nombreusu"/>
-            <label for="pwd">Contraseña</label>
+           <!--
+            <label for="pwd">Contrasenya</label>
             <input id="pwd" name="pwd" type="password" id="pwd"/>
-            <button type="submit">Entrar</button>
+            -->
+            <button id="btEnviament" type="submit">Entrar</button>
         </form>
     </div>    
 </body>

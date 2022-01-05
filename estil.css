@@ -1,3 +1,7 @@
+body{
+    background-color: darkseagreen;
+}
+
 tr > * {
     border:2px black solid;
     width:100px;
@@ -15,3 +19,34 @@ td > *{
     background-color: floralwhite;
 }
 
+    /* Login */
+h1{
+    text-align: center;
+    margin-bottom:10%;
+    font-size:3em;
+}
+
+input,label,button{
+    display:block;
+    margin:auto;
+    font-size:1.5em;
+}
+
+label{
+    text-align: center;
+    margin-top:1%;
+}
+
+button{
+    margin-top:2%;
+    background-color: darkgreen;
+    color:chartreuse;
+    border-color:darkgreen;
+    border-radius: 10px;
+    width:5%;
+}
+
+button:hover{
+    background-color: chartreuse ;
+    color:darkgreen;
+}
