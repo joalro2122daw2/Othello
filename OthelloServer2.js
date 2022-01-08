@@ -1,3 +1,4 @@
+const { append } = require("express/lib/response");
 var http = require("http");
 var url = require("url");
 
@@ -10,6 +11,7 @@ var url = require("url");
   
 function iniciar(encaminar, manegadorPeticions) {
   function onRequest(request, response) {
+    
     const baseURL = request.protocol + '://' + request.headers.host + '/'; //Path de la url de la peticion (http://host/)
     const reqUrl = new URL(request.url, baseURL);
     var dataPosteada = "";

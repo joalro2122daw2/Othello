@@ -3,20 +3,39 @@ let assert = require('assert'); //utilitzem assercions
 
 var XMLHttpRequest = require('xhr2');
 const querystring = require('querystring');
+const Jugador = require('./Jugador');
+const Partida = require('./Partida');
+const DAOMongo = require('./DAOMongo');
 
 var MongoClient = require('mongodb').MongoClient;
 var cadenaConnexio = 'mongodb://localhost:27017/partides';
+
+/* Commproba si existeix un partida amb un sol jugador.
+   Si existeix, envia les dades al client per a que aquest envii el seu nom i el id de la partida de
+   tornada al servidor i aquest la actualitzará i començara la partida.
+   Si no existeix, envia un zero al client per a que aquest envii el seu nom i el servidor creara una
+   nova partida amb aquest jugador i la afegira a la base de dades. */
+   function comprobarPartidaDisponible(response,datapost){
+    console.log("manegador de la petició 'comprobarPartidaDisponible' s'ha cridat.");
+    DAOMongo.partidaUnJugador(response);
+   }
+  
+
+
 
 
 /* Afegeix l'usuari i la contrasenya a la base de dades i si es 
    el segon jugador, envia el tauler i inicia el joc */
 function validarUser(response,datapost){
   console.log("manegador de la petició 'validarUser' s'ha cridat.");
-  response.writeHead(204); // Sense resposta
+  //response.writeHead(204); // Sense resposta
   // Obtenir el nom del usuari introduit
   let searchparams = new URLSearchParams(datapost);
   let nomusuari = searchparams.get("nombreusu");
+  let idpartida = searchparams.get("idpartida");
+  //console.log("Nom usuari: " + nomusuari + " id partida: " + idpartida);
   //console.log("Nom: " + searchparams.get("nombreusu"));
+  
   if(!nomusuari || nomusuari.length == 0)
   {
     console.log("Nom no introuït.");
@@ -24,28 +43,26 @@ function validarUser(response,datapost){
     response.end();
     return;
   }
-  /*FALTA:
-    - CONSTRUIR UN OBJETO JUGADOR
-    - COMPROBAR EN LA BASE DE DATOS DE MONGO partides SI EXISTE UNA PARTIDA CON UN SOLO JUGADOR
-    - SI NO EXISTE UNA PARTIDA CON UN SOLO JUGADOR, CREAR UN OBJETO PARTIDA Y AÑADIR EL OBJETO JUGADOR
-    - SI EXISTE UNA PARTIDA CON UN SOLO JUGADOR, AÑADIR EL OBJETO JUGADOR E INICIAR LA PARTIDA
-  */
-  
-  MongoClient.connect(cadenaConnexio,function(err,client){
-    assert.equal(null, err);
-    console.log("Connexió correcta");
-    var db = client.db('partides');
-    db.collection('partides').insertOne({
-        "nom": searchparams.get('nombreusu')
-    });
-    assert.equal(err, null);
-    console.log("Afegit document a col·lecció partides");
-  });
-  //  FALTA AÑADIR LOS DATOS A LA BASE DE DATOS. LUEGO HACER UNA QUERY Y SI HAY DOS JUGADORES
-  //  ENVIAR EL TABLERO Y COMENZAR LA PARTIDA. CUANDO UN JUGADOR SALE DE LA PARTIDA, SE BORRA DE 
-  //  LA BASE DE DATOS.
+  /* Crear nuevo objeto jugador */
+  let j = new Jugador(nomusuari,"b");
+
+  if(idpartida === "null") // No existeix una partida amb un sol jugador. Crear nova partida
+  {
+    console.log("Partida null. Crear nova partida.");
+   /* Crear una nova partida */
+   let p = new Partida();
+   p.jugadors.push(j);
+   DAOMongo.afegeixPartida(p);
+  }
+  else // La partida amb un sol jugador existeix, afegir el jugador 
+  {
+    console.log("Existeix partida amb un jugador" + idpartida + " Afegir jugador " + nomusuari);
+  }
+  /* Enviar cookie de sessio */
+  response.writeHead(200, {'Set-Cookie': nomusuari, 'Content-Type': 'text/plain'});
   response.end();
 }
+
 
 /* Envia el formulari del Login */
 function login(response,datapost){
@@ -58,6 +75,7 @@ function login(response,datapost){
     response.end();
   });
 }
+
 
 /* Envia el html del tauler */
 function enviarTauler(response,datapost) {
@@ -125,7 +143,12 @@ function enviarFitxaBlanca(response,datapost)
          
   
   exports.login = login;
+  exports.comprobarPartidaDisponible = comprobarPartidaDisponible;
+
+
+
   exports.validarUser = validarUser;
+  
   exports.enviarTauler = enviarTauler;
   exports.enviarCSS = enviarCSS;
   exports.enviarSCRIPT = enviarSCRIPT;

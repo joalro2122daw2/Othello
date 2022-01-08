@@ -1,4 +1,14 @@
-class jugador
+class Jugador
 {
-    constructor(nom,fitxes,color)
-}
+    constructor(nom,color)
+    {
+        this.nom = nom;
+        this.fitxes = 2;
+        this.color = color;
+    }
+
+    
+} //Fi de la classe
+
+module.exports=Jugador;
+
