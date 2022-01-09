@@ -58,3 +58,10 @@ button:hover{
     top:8%;
     left:28%;
 }
+
+#lbCom{
+    position:absolute;
+    top:10%;
+    left:100%;
+    background-color:red;
+}

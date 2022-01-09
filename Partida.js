@@ -1,7 +1,9 @@
 class Partida{
     constructor()
     {
-        //this.id = id;
+        this._id = Partida.generaid();
+        this.complerta = false;
+        this.torn = "b";
         this.jugadors = [];
         this.tauler = [];
         this.iniciaTauler();
@@ -19,12 +21,19 @@ class Partida{
             }
         }
         //fitxes blanques inicials
+        this.tauler[3][3] = 1;
         this.tauler[4][4] = 1;
-        this.tauler[5][5] = 1;
         //fitxes negres inicials
-        this.tauler[4][5] = 0;
-        this.tauler[5][4] = 0;
+        this.tauler[3][4] = 0;
+        this.tauler[4][3] = 0;
         //console.log(this.tauler);
+    }
+
+    static generaid()
+    {
+        let token1 = Math.random().toString(36).substr(2);
+        let token2 = Math.random().toString(36).substr(2);
+        return token1+token2;
     }
 }
 

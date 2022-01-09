@@ -11,7 +11,7 @@ class DAOMongo{
         {
           MongoClient.connect(cadenaConnexio,function(err,client){
             var db = client.db('partides');
-            let consulta = db.collection('partides').aggregate([{$project:{count:{$size:"$jugadors"}}}]).toArray(function(err,result){                                  
+            db.collection('partides').aggregate([{$project:{count:{$size:"$jugadors"}}}]).toArray(function(err,result){                                  
               if(result[0])
               {
                 console.log(result[0].count); 
@@ -35,7 +35,7 @@ class DAOMongo{
                 assert.equal(null, err);
                 console.log("Connexió correcta");
                 var db = client.db('partides');
-                let inserted = db.collection('partides').insertOne({"jugadors":partida.jugadors,"tauler":partida.tauler});
+                let inserted = db.collection('partides').insertOne({"_id":partida._id, "complerta":partida.complerta, "jugadors":partida.jugadors,"tauler":partida.tauler});
                 assert.equal(err, null);
                 console.log("Afegit document a col·lecció partides");                          
         });
@@ -56,6 +56,26 @@ class DAOMongo{
                 
             });
       }
+
+      /* Obté la partida corresponent al id passat com a argument i la envia en format json */
+      static consultaEstado(nom,id,response)
+      {
+        MongoClient.connect(cadenaConnexio,async function(err,client){
+          var db = client.db('partides');     
+          let promise = db.collection('partides').find({_id:id},{complerta:1,tauler:1}).toArray((function(err,result){                    
+            //result.forEach(x => console.log(x));
+            if(result.length > 0)
+            {
+              //console.log(result[0].complerta);
+              //console.log(result[0].tauler);
+              response.write(JSON.stringify(result[0]));
+            }
+            response.end();                      
+          }))
+        });
+      }
+
+      
 
 
 

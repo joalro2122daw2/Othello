@@ -23,7 +23,7 @@ function iniciar(encaminar, manegadorPeticions) {
 		});
 
     request.addListener("end", function() {
-			encaminar(manegadorPeticions, reqUrl.pathname, response, dataPosteada);
+			encaminar(manegadorPeticions, reqUrl.pathname, response, dataPosteada,request);
 		});
 
     //encaminar(manegadorPeticions, reqUrl.pathname, response);
