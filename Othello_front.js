@@ -7,6 +7,8 @@ var color = 'n';
 var ample;
 var alt;
 var partida;
+//var refresh = 10000;
+
 
 
 function iniciar()
@@ -99,7 +101,7 @@ function demanarTauler()
         //console.log(ample);
         //tauler.style.width = (ample/2.5).toString() + "px";
         //tauler.style.height = (alt/2.5).toString() + "px";
-        setInterval(consultaEstat,10000);
+        setInterval(consultaEstat,2000);
     } 
     xhttp.open("GET", "http://localhost:8888/tauler", true);
     xhttp.setRequestHeader("Cache-Control","no-cache, mustrevalidate")
@@ -118,12 +120,12 @@ function consultaEstat()
         if(partida)
         {            
             complet = partida.complerta;
-            tauler = partida.tauler;
+            //tauler = partida.tauler;
         }
         else
         {          
           complet = getComplerta(xhttp.response);
-          tauler = getTauler(xhttp.response);
+          //tauler = getTauler(xhttp.response);
         }               
         if(complet == 'false')
         {
@@ -135,6 +137,8 @@ function consultaEstat()
             try
             {         
                 partida = JSON.parse(xhttp.response);
+                //partida.tauler;
+                //tauler = getTauler(xhttp.response);
             }
             catch(error)
             {
@@ -144,12 +148,14 @@ function consultaEstat()
             let nomjugador = partida.jugadors[torn].nom;
             lbCom.innerHTML = "Torn pel jugador: "+nomjugador;
             lbCom.style.backgroundColor = "green";
+            console.log("Partida torn: " + partida.torn);
         }
         else
         {
             lbCom.innerHTML = "Sense conexió";
             lbCom.style.backgroundColor = "red";
         }
+        tauler = getTauler(xhttp.response);
         pintaTauler(tauler);
         //console.log("Tauler " + tauler);
     }
@@ -182,38 +188,27 @@ function getTorn(resposta)
 
 function pintaTauler(tauler)
 {    
-    let ind1 = tauler.indexOf(',');
-    let ind2 = tauler.indexOf(',',ind1+1);
-    let i = 1;
-    let j = 1;
-    while(ind1 > 0 && ind2 > 0)
+    let taulerarray = JSON.parse(tauler);
+    for(let i = 0; i < 8; i++)
     {
-        let c = tauler.substr(ind1+1,ind2-ind1-1);
-        if(c[0] === '[')
-          c = c.substr(1);
-        else if(c[c.length-1] === ']')
-          c = c.substr(0,c.length-1);
-        if(j < 8)
-            j++;
-        else
+        for(let j = 0; j < 8; j++)
         {
-            j = 1;
-            i++;
+            //console.log(taulerarray[i][j]);
+            pintarFitxa(i+1,j+1,taulerarray[i][j]);
         }
-        //console.log("Casella:" + i.toString()+j.toString() + " C: " + c);
-        ind1 = ind2;
-        if(ind1 > 0)
-            ind2 = tauler.indexOf(',',ind1+1);
-        pintarFitxa(i,j,c);
     }
 }
 
 function pintarFitxa(i,j,c)
 {
-    if(c === '-1')
+    //console.log("Entra en pintar fitxa");
+    //if(c === '-1')
+    if(c < 0)
         return;
     let fitxa;
-    if(c === '1')
+    //console.log("Pintar fitxa: " + i + "  "+ j + "  "+c);
+    //if(c === '1')
+    if(c > 0)
     {        
         fitxa = new Image(ample/20,alt/12);
         fitxa.src = 'imatges/fitxa-blanca.png'; 
@@ -234,10 +229,11 @@ function pintarFitxa(i,j,c)
 
 function posarFixta(ev)
 {
-    if(!partida) // Si la partida no ha començat, no fer res
+    if(!partida ) // Si la partida no ha començat, o ja s'ha posat una fitxa, no fer res
         return;
     if(partida.torn === color) //Si el torn es del jugador que ha clicat
     {
+        console.log("Fitxa posada");
         let i = ((ev.target.id).substr(0,1)*1)-1;
         let j = ((ev.target.id).substr(1)*1)-1;
         //Comprovar si la casella està buida
@@ -269,17 +265,39 @@ function posarFixta(ev)
     }   
 }
 
-/* Envia al servidor el tauler amb una nova fitxa posada.
-   El servidor comprova les repercursions i modifica el tauler en consequencia*/ 
+/* Envia al servidor una fitxa per que la afegeixi */
 function enviarFitxa(i,j,color)
 {
     let xhttp = new XMLHttpRequest();  
     let params = "fila="+i+"&columna="+j+"&color="+color;
     let func = function(){
-        
+        //Una vegada afegida la fitxa, demanar al servidor que calculi les repercusions, modifiqui el
+        // tauler i canvii de jugador
+        console.log("Demanar repercusions");
+        demanarRepercusions();
     } 
     xhttp.open("PUT", "http://localhost:8888/fitxaPosada", true);
     xhttp.setRequestHeader("Cache-Control","no-cache, mustrevalidate")
     xhttp.onreadystatechange=func;
     xhttp.send(params);
+}
+
+
+/* Demana al servidor que calculi les repercusions, modifiqui el tauler en consequencia i
+    canvii de jugador */
+function demanarRepercusions()
+{
+    let xhttp = new XMLHttpRequest();
+    let func = function(){
+        /* Accions a realitzar una vegada actualitzat el tauler i el torn */
+        habilitat = true;
+        let lbCom = document.getElementById("lbCom");
+        let torn = (partida.torn === 'b')?0:1;
+        let nomjugador = partida.jugadors[torn].nom;
+        lbCom.innerHTML = "Torn pel jugador: "+nomjugador;
+    }
+    xhttp.open("GET","http://localhost:8888/calculaRepercusions",true);
+    xhttp.setRequestHeader("Cache-Control","no-cache, mustrevalidate")
+    xhttp.onreadystatechange=func;
+    xhttp.send();
 }

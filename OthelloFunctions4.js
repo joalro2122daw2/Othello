@@ -164,20 +164,24 @@ function fitxaPosada(response,datapost,request)
  //Obtenir la cookie del client amb l'id de la partida
   const cookieHeader = request.headers?.cookie;
   let indexid = cookieHeader.lastIndexOf('=')
-  let id = cookieHeader.substr(indexid);
+  let id = cookieHeader.substr(indexid+1);
   // Obtenir la fila, columna i color de la fitxa
   let searchparams = new URLSearchParams(datapost);
   let fila = searchparams.get("fila");
   let columna = searchparams.get("columna");
   let color = searchparams.get("color");
-  console.log("Fila:" + fila + " Columna: " + columna + " Color: " + color);
-  //FALTA ESCRIBIR METODO EN DAOMongo PARA MODIFICAR LA CASILLA CON LA FICHA Y LLAMAR A calcularRepercusions
-  response.end();
+  //console.log("Fila:" + fila + " Columna: " + columna + " Color: " + color);
+  DAOMongo.afegirFitxa(fila,columna,color,id,response);
 }
 
-function calcularRepercusions()
+function calculaRepercusions(response,datapost,request)
 {
-  //FALTA ESCRIBIR
+  console.log("manegador de la petició 'calculaRepercusions' s'ha cridat.");  
+ //Obtenir la cookie del client amb l'id de la partida
+  const cookieHeader = request.headers?.cookie;
+  let indexid = cookieHeader.lastIndexOf('=')
+  let id = cookieHeader.substr(indexid+1);
+  DAOMongo.calculaRepercusions(id,response);
 }
 
   exports.login = login;
@@ -190,5 +194,6 @@ function calcularRepercusions()
   exports.comprobarPartidaDisponible = comprobarPartidaDisponible;
   exports.consultaEstat = consultaEstat;
   exports.fitxaPosada = fitxaPosada;
+  exports.calculaRepercusions = calculaRepercusions;
 
   

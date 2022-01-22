@@ -83,6 +83,7 @@ class DAOMongo{
       /* Obté la partida corresponent al id passat com a argument i la envia en format json */
       static consultaEstado(nom,id,response)
       {
+        /*
         MongoClient.connect(cadenaConnexio,async function(err,client){
           var db = client.db('partides');     
           db.collection('partides').find({_id:id},{complerta:1,tauler:1}).toArray((function(err,result){                                
@@ -93,9 +94,111 @@ class DAOMongo{
             response.end();                      
           }))
         });
+        */
+        
+        MongoClient.connect(cadenaConnexio,async function(err,client){
+          var db = client.db('partides');    
+          let p = new Promise((resolver,reject)=>{
+            db.collection('partides').find({_id:id},{complerta:1,tauler:1}).toArray((function(err,result){                                
+              resolver(result);
+            }));
+          }); 
+          p.then((result) =>{
+            if(result && result.length > 0)
+            {              
+              response.write(JSON.stringify(result[0]));
+            }
+            response.end();      
+          })
+        });
       }
 
+      /* Afegeix la fitxa pasada pasada com a tercer argument al la casella amb la fila i columna pasades
+         com a primer i segon arguments a la partida amb id passat com a quart argument */
+      static afegirFitxa(fila,columna,color,id,response)
+      {
+        //console.log("Id de la partida: " + id);
+        MongoClient.connect(cadenaConnexio,async function(err,client){
+          var db = client.db('partides'); 
+          /* Obtenir la partida amb un jugador */
+          let p = new Promise((resolver,reject)=>{
+              db.collection('partides').findOne({_id:id},function(err,result){
+                console.log("Resultado: " + result._id );
+                resolver(result);                
+              })          
+          });
+          // Afegir la fitxa a la casella de partida trobada en els index indicats
+          p.then((partida) => { 
+             let r =db.collection('partides').updateOne({ _id: partida._id},{$set: {["tauler."+fila+"."+columna]: color*1}});             
+             response.end();
+            });
+      });
+    }
+
+    static calculaRepercusions(id,response)
+    {
+        //console.log("Id de la partida: " + id);
+        MongoClient.connect(cadenaConnexio,async function(err,client){
+          var db = client.db('partides'); 
+          /* Obtenir la partida amb un jugador */
+          let p = new Promise((resolver,reject)=>{
+              db.collection('partides').findOne({_id:id},function(err,result){
+                console.log("Resultado: " + result._id );
+                resolver(result);                
+              })          
+          });
+          // Afegir la fitxa a la casella de partida trobada en els index indicats
+          p.then((partida) => {
+            //console.log("Partida en DAO: " + Object.keys(partida));
+            let tauler = partida.tauler;
+            //console.log("Tauler en DAO: " + tauler);
+            tauler = DAOMongo.comprobarFiles(tauler);
+            /* canviar de jugador */
+            //console.log("Partida torn: " + partida.torn);
+            partida.torn = (partida.torn === 'b')?'n':'b';
+            //console.log("Partida torn: " + partida.torn);
+            db.collection('partides').updateOne({ _id: partida._id},{$set: {"torn": partida.torn}});             
+            /* actualitzar el tauler */
+            db.collection('partides').updateOne({ _id: partida._id},{$set: {"tauler": tauler}});             
+            response.end();
+          });
+        });
+     }
       
+static comprobarFiles(tauler)
+{
+  //console.log("Tauler en funcio: " + tauler);
+  tauler.forEach(fila => {
+    //console.log("Fila: " + fila);
+    fila = DAOMongo.comprobarFila(fila);
+  });
+  return tauler;
+}
+    
+static comprobarFila(fila)
+{
+  for(let i = 0; i < 7;i++)
+  {
+    let casella = fila[i];
+    if(casella < 0)
+      continue;
+    for(let j = i+1; j < 8;j++)
+    {
+      let casella2 = fila[j];
+      if(casella2 < 0)
+        break;
+      if(casella === casella2)
+      {
+        for(let n = i; n < j;n++)
+          fila[n] = casella;
+        //return fila;
+      }
+    }
+  }
+  return fila;
+}// Fi de comprobar fila
+      
+    
 
 
 

@@ -15,6 +15,8 @@ manegadors["/Othello_front.js"] = manegadorPeticions.enviarSCRIPT;
 manegadors["/imatges/fitxa-negra.png"] = manegadorPeticions.enviarFitxaNegra;
 manegadors["/imatges/fitxa-blanca.png"] = manegadorPeticions.enviarFitxaBlanca;
 manegadors["/fitxaPosada"] = manegadorPeticions.fitxaPosada;
+manegadors["/calculaRepercusions"] = manegadorPeticions.calculaRepercusions;
+
 // Iniciar el servidor 
 server.iniciar(encaminador.encaminar, manegadors);
 
