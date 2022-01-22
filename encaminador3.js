@@ -1,5 +1,5 @@
 function encaminar(manegadorPeticions, pathname,response,datapost,request) {
-    console.log('preparat per encaminar una petició a ...' + pathname);
+    //console.log('preparat per encaminar una petició a ...' + pathname);
     
     if (typeof manegadorPeticions[pathname] === 'function') {
       return manegadorPeticions[pathname](response,datapost,request);

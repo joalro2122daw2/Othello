@@ -25,6 +25,7 @@ class DAOMongo{
               {
                 response.write("0");
               }
+              client.close();
               response.end();    
             });
           });
@@ -36,9 +37,9 @@ class DAOMongo{
                 assert.equal(null, err);
                 console.log("Connexió correcta");
                 var db = client.db('partides');
-                let inserted = db.collection('partides').insertOne({"_id":partida._id, "complerta":partida.complerta, "torn":partida.torn, "jugadors":partida.jugadors,"tauler":partida.tauler});
+                db.collection('partides').insertOne({"_id":partida._id, "complerta":partida.complerta, "torn":partida.torn, "jugadors":partida.jugadors,"tauler":partida.tauler});
                 assert.equal(err, null);
-                console.log("Afegit document a col·lecció partides");                          
+                console.log("Afegit document a col·lecció partides");                        
         });
       }
 
@@ -56,7 +57,7 @@ class DAOMongo{
           });
           // Afegir el nou jugador a la partida trobada y posar complerta a true
           p.then((partida) => { 
-             db.collection('partides').updateOne({ _id: partida._id},{$set: {"jugadors.1": j,"complerta":true}})
+             db.collection('partides').updateOne({ _id: partida._id},{$set: {"jugadors.1": j,"complerta":true}});
             });
       });
     }
@@ -123,7 +124,7 @@ class DAOMongo{
           /* Obtenir la partida amb un jugador */
           let p = new Promise((resolver,reject)=>{
               db.collection('partides').findOne({_id:id},function(err,result){
-                console.log("Resultado: " + result._id );
+                //console.log("Resultado: " + result._id );
                 resolver(result);                
               })          
           });
@@ -135,8 +136,9 @@ class DAOMongo{
       });
     }
 
-    static calculaRepercusions(id,response)
+    static calculaRepercusions(id,response,fila,columna)
     {
+      console.log("Fila: " + fila + " Columna: " + columna)
         //console.log("Id de la partida: " + id);
         MongoClient.connect(cadenaConnexio,async function(err,client){
           var db = client.db('partides'); 
@@ -152,26 +154,23 @@ class DAOMongo{
             //console.log("Partida en DAO: " + Object.keys(partida));
             let tauler = partida.tauler;
             //console.log("Tauler en DAO: " + tauler);
-            tauler = DAOMongo.comprobarFiles(tauler);
+            tauler = DAOMongo.comprobarFiles(tauler,fila);
             /* canviar de jugador */
             //console.log("Partida torn: " + partida.torn);
             partida.torn = (partida.torn === 'b')?'n':'b';
             //console.log("Partida torn: " + partida.torn);
             db.collection('partides').updateOne({ _id: partida._id},{$set: {"torn": partida.torn}});             
             /* actualitzar el tauler */
-            db.collection('partides').updateOne({ _id: partida._id},{$set: {"tauler": tauler}});             
+            db.collection('partides').updateOne({ _id: partida._id},{$set: {"tauler": tauler}});          
             response.end();
           });
         });
      }
       
-static comprobarFiles(tauler)
+static comprobarFiles(tauler,indexfila)
 {
-  //console.log("Tauler en funcio: " + tauler);
-  tauler.forEach(fila => {
-    //console.log("Fila: " + fila);
+    let fila = tauler[indexfila];
     fila = DAOMongo.comprobarFila(fila);
-  });
   return tauler;
 }
     
@@ -191,7 +190,6 @@ static comprobarFila(fila)
       {
         for(let n = i; n < j;n++)
           fila[n] = casella;
-        //return fila;
       }
     }
   }

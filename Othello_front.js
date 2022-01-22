@@ -9,21 +9,12 @@ var alt;
 var partida;
 //var refresh = 10000;
 
-
+let id;
 
 function iniciar()
 {
-    /*
-    tauler = document.getElementById("tauler");
-    tauler.addEventListener("click",pintarFitxa);
-    */
     alt = window.screen.availHeight;
     ample = window.screen.availWidth;
-    /*
-    console.log(ample);
-    tauler.style.width = (ample/2).toString() + "px";
-    tauler.style.height = (alt/2).toString() + "px";
-    */
 }
 
 /* Envia al servidor la peticio de comprobar si existeix una partida amb un sol jugador.
@@ -101,7 +92,7 @@ function demanarTauler()
         //console.log(ample);
         //tauler.style.width = (ample/2.5).toString() + "px";
         //tauler.style.height = (alt/2.5).toString() + "px";
-        setInterval(consultaEstat,2000);
+        id = setInterval(consultaEstat,1000);
     } 
     xhttp.open("GET", "http://localhost:8888/tauler", true);
     xhttp.setRequestHeader("Cache-Control","no-cache, mustrevalidate")
@@ -133,7 +124,7 @@ function consultaEstat()
             lbCom.style.backgroundColor = "yellow";
         }
         else if(complet)
-        {
+        {            
             try
             {         
                 partida = JSON.parse(xhttp.response);

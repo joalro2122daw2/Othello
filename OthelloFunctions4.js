@@ -154,6 +154,7 @@ function consultaEstat(response,datapost,request)
   //console.log("Cookie Nom: " + nom + " Id: " + id);
 }
 
+let fila,columna;
 /* Extreu de la cookie del client, l'id de la partida. Obté la fila , la columna del tauler i el color de
    la fitxa passades com a arguments del put. Modifica el contingut d'aquesta casella al tauler de la partida
    en la base de dades. Crida al metode calcularRepercursions per a refer el tauler de la partida segons les 
@@ -167,8 +168,8 @@ function fitxaPosada(response,datapost,request)
   let id = cookieHeader.substr(indexid+1);
   // Obtenir la fila, columna i color de la fitxa
   let searchparams = new URLSearchParams(datapost);
-  let fila = searchparams.get("fila");
-  let columna = searchparams.get("columna");
+  fila = searchparams.get("fila");
+  columna = searchparams.get("columna");
   let color = searchparams.get("color");
   //console.log("Fila:" + fila + " Columna: " + columna + " Color: " + color);
   DAOMongo.afegirFitxa(fila,columna,color,id,response);
@@ -181,7 +182,7 @@ function calculaRepercusions(response,datapost,request)
   const cookieHeader = request.headers?.cookie;
   let indexid = cookieHeader.lastIndexOf('=')
   let id = cookieHeader.substr(indexid+1);
-  DAOMongo.calculaRepercusions(id,response);
+  DAOMongo.calculaRepercusions(id,response,fila,columna);
 }
 
   exports.login = login;

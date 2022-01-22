@@ -15,11 +15,11 @@ function iniciar(encaminar, manegadorPeticions) {
     const baseURL = request.protocol + '://' + request.headers.host + '/'; //Path de la url de la peticion (http://host/)
     const reqUrl = new URL(request.url, baseURL);
     var dataPosteada = "";
-    console.log("Petició per a  " + reqUrl.pathname + " rebuda.");
+    //console.log("Petició per a  " + reqUrl.pathname + " rebuda.");
 
     request.addListener("data", function(trozoPosteado) {
 			dataPosteada += trozoPosteado;
-			console.log("Recibido trozo POST '" + trozoPosteado + "'.");
+			//console.log("Recibido trozo POST '" + trozoPosteado + "'.");
 		});
 
     request.addListener("end", function() {
