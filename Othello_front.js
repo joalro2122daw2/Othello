@@ -1,6 +1,6 @@
 //const { enviarTauler } = require("./OthelloFunctions4");
 
-const { enviarTauler } = require("./OthelloFunctions4");
+//const { enviarTauler } = require("./OthelloFunctions4");
 
 var tauler;
 var color = 'n';
@@ -9,7 +9,7 @@ var alt;
 var partida;
 //var refresh = 10000;
 
-let id;
+var id;
 
 function iniciar()
 {
@@ -77,6 +77,7 @@ function demanarTauler()
 {
     let xhttp = new XMLHttpRequest();  
     let func = function(){
+        if (xhttp.readyState==4 && xhttp.status==200) {
         //console.log("Tauler rebut");        
         let divlogin = document.getElementById("divLogin");
         divlogin.hidden = true;
@@ -93,6 +94,7 @@ function demanarTauler()
         //tauler.style.width = (ample/2.5).toString() + "px";
         //tauler.style.height = (alt/2.5).toString() + "px";
         id = setInterval(consultaEstat,1000);
+        }
     } 
     xhttp.open("GET", "http://localhost:8888/tauler", true);
     xhttp.setRequestHeader("Cache-Control","no-cache, mustrevalidate")
@@ -104,51 +106,54 @@ function demanarTauler()
 function consultaEstat()
 {
     let xhttp = new XMLHttpRequest();
-    let func = function(){
-        let complet;
-        let tauler;
-        let lbCom = document.getElementById("lbCom");
-        if(partida)
-        {            
-            complet = partida.complerta;
-            //tauler = partida.tauler;
-        }
-        else
-        {          
-          complet = getComplerta(xhttp.response);
-          //tauler = getTauler(xhttp.response);
-        }               
-        if(complet == 'false')
-        {
-            lbCom.innerHTML = "Esperant rival";
-            lbCom.style.backgroundColor = "yellow";
-        }
-        else if(complet)
-        {            
-            try
-            {         
-                partida = JSON.parse(xhttp.response);
-                //partida.tauler;
-                //tauler = getTauler(xhttp.response);
-            }
-            catch(error)
-            {
 
+    let func = function(){
+        if (xhttp.readyState==4 && xhttp.status==200) {
+            let complet;
+            let tauler;
+            let lbCom = document.getElementById("lbCom");
+            try
+            {
+                partida = JSON.parse(xhttp.response);
             }
-            let torn = (partida.torn === 'b')?0:1;
-            let nomjugador = partida.jugadors[torn].nom;
-            lbCom.innerHTML = "Torn pel jugador: "+nomjugador;
-            lbCom.style.backgroundColor = "green";
-            console.log("Partida torn: " + partida.torn);
+            catch{}
+            
+            if(partida)
+            {            
+                complet = partida.complerta;
+                //tauler = partida.tauler;
+            }
+            else
+            {          
+            complet = getComplerta(xhttp.response);
+            //tauler = getTauler(xhttp.response);
+            } 
+
+            if(complet === 'false' || !complet)
+            {
+                lbCom.innerHTML = "Esperant rival";
+                lbCom.style.backgroundColor = "yellow";
+                return;
+            }
+            else if(complet)
+            {    
+                let torn = (partida.torn === 'b')?0:1;
+                if(torn != 0 && torn != 1)//error d'conexio
+                    return; 
+                let nomjugador = partida.jugadors[torn].nom;
+                lbCom.innerHTML = "Torn pel jugador: "+nomjugador;
+                lbCom.style.backgroundColor = "green";
+                console.log("Partida torn: " + partida.torn);
+            }
+            else
+            {
+                lbCom.innerHTML = "Sense conexió";
+                lbCom.style.backgroundColor = "red";
+            }
+            tauler = getTauler(xhttp.response);
+            pintaTauler(tauler);
+            //console.log("Tauler " + tauler);
         }
-        else
-        {
-            lbCom.innerHTML = "Sense conexió";
-            lbCom.style.backgroundColor = "red";
-        }
-        tauler = getTauler(xhttp.response);
-        pintaTauler(tauler);
-        //console.log("Tauler " + tauler);
     }
     xhttp.open("GET", "http://localhost:8888/consultaEstat", true);
     xhttp.setRequestHeader("Cache-Control","no-cache, mustrevalidate")
@@ -179,14 +184,21 @@ function getTorn(resposta)
 
 function pintaTauler(tauler)
 {    
-    let taulerarray = JSON.parse(tauler);
-    for(let i = 0; i < 8; i++)
+    try
     {
-        for(let j = 0; j < 8; j++)
+        let taulerarray = JSON.parse(tauler);
+        for(let i = 0; i < 8; i++)
         {
-            //console.log(taulerarray[i][j]);
-            pintarFitxa(i+1,j+1,taulerarray[i][j]);
+            for(let j = 0; j < 8; j++)
+            {
+                //console.log(taulerarray[i][j]);
+                pintarFitxa(i+1,j+1,taulerarray[i][j]);
+            }
         }
+    }
+    catch
+    {
+
     }
 }
 
@@ -262,11 +274,13 @@ function enviarFitxa(i,j,color)
     let xhttp = new XMLHttpRequest();  
     let params = "fila="+i+"&columna="+j+"&color="+color;
     let func = function(){
+        if (xhttp.readyState==4 && xhttp.status==200) {
         //Una vegada afegida la fitxa, demanar al servidor que calculi les repercusions, modifiqui el
         // tauler i canvii de jugador
         console.log("Demanar repercusions");
         demanarRepercusions();
-    } 
+        } 
+    }
     xhttp.open("PUT", "http://localhost:8888/fitxaPosada", true);
     xhttp.setRequestHeader("Cache-Control","no-cache, mustrevalidate")
     xhttp.onreadystatechange=func;
@@ -280,12 +294,14 @@ function demanarRepercusions()
 {
     let xhttp = new XMLHttpRequest();
     let func = function(){
+        if (xhttp.readyState==4 && xhttp.status==200) {
         /* Accions a realitzar una vegada actualitzat el tauler i el torn */
         habilitat = true;
         let lbCom = document.getElementById("lbCom");
         let torn = (partida.torn === 'b')?0:1;
         let nomjugador = partida.jugadors[torn].nom;
         lbCom.innerHTML = "Torn pel jugador: "+nomjugador;
+        }
     }
     xhttp.open("GET","http://localhost:8888/calculaRepercusions",true);
     xhttp.setRequestHeader("Cache-Control","no-cache, mustrevalidate")
