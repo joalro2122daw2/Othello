@@ -232,17 +232,25 @@ static comprobarColumnes(tauler,indexcolumna)
 static comprobarDiagonalD(tauler,indexfila,indexcolumna)
 {
   let diagonal = [];
+  //Anar a la primera fila i columna de la diagonal
   let fila = indexfila;
   let columna = indexcolumna;
-  while(fila < 8 && columna < 8)
+  while(fila > 0 && columna > 0)
   {
-    diagonal.push(tauler[fila][columna]);
-    fila++;
-    columna++;
+    fila--;
+    columna--;
+  }
+  //console.log("Fila: " + fila + " Columna: " + columna);
+  //Ficar la diagonal en una array
+  let inicifila = fila;
+  let inicicolumna = columna;
+  while(inicifila < 8 && inicicolumna < 8)
+  {
+    diagonal.push(tauler[inicifila][inicicolumna]);
+    inicifila++;
+    inicicolumna++;
   }
   DAOMongo.comprobarFila(diagonal);
-  columna = indexcolumna;
-  fila = indexfila;
   for(let i = 0; i < diagonal.length;i++,columna++,fila++)
   {
     tauler[fila][columna] = diagonal[i]; 
@@ -250,22 +258,29 @@ static comprobarDiagonalD(tauler,indexfila,indexcolumna)
   return tauler;
 }
   
+
 static comprobarDiagonalI(tauler,indexfila,indexcolumna)
 {
   let diagonal = [];
+  //Anar a la primera fila i columna de la diagonal
   let fila = indexfila;
   let columna = indexcolumna;
-  while(fila < 8 && columna >= 0)
+  while(fila > 0 && columna < 8)
   {
-    diagonal.push(tauler[fila][columna]);
-    fila++;
-    columna--;
+    fila--;
+    columna++;
   }
-  console.log("Antes: " + diagonal);
-  diagonal = DAOMongo.comprobarFila(diagonal);
-  console.log("Despues: " + diagonal);
-  fila = indexfila;
-  columna = indexcolumna;
+  //console.log("Fila: " + fila + " Columna: " + columna);
+  //Ficar la diagonal en una array
+  let inicifila = fila;
+  let inicicolumna = columna;
+  while(inicifila < 8 && inicicolumna > 0)
+  {
+    diagonal.push(tauler[inicifila][inicicolumna]);
+    inicifila++;
+    inicicolumna--;
+  }
+  DAOMongo.comprobarFila(diagonal);
   for(let i = 0; i < diagonal.length;i++,columna--,fila++)
   {
     tauler[fila][columna] = diagonal[i]; 
