@@ -149,7 +149,7 @@ class DAOMongo{
     {
       
       //Amb promise explicita
-      console.log("Fila: " + fila + " Columna: " + columna)
+      //console.log("Fila: " + fila + " Columna: " + columna)
         //console.log("Id de la partida: " + id);
         MongoClient.connect(cadenaConnexio,async function(err,client){
           var db = client.db('partides'); 
@@ -165,17 +165,21 @@ class DAOMongo{
             //console.log("Partida en DAO: " + Object.keys(partida));
             let tauler = partida.tauler;
             //console.log("Tauler en DAO: " + tauler);
+            tauler = DAOMongo.comprobarDiagonalI(tauler,fila,columna);
+            tauler = DAOMongo.comprobarDiagonalD(tauler,fila,columna);
             tauler = DAOMongo.comprobarFiles(tauler,fila);
             tauler = DAOMongo.comprobarColumnes(tauler,columna);
-            tauler = DAOMongo.comprobarDiagonalD(tauler,fila,columna);
-            tauler = DAOMongo.comprobarDiagonalI(tauler,fila,columna);
-            //canviar de jugador 
+            let puntuacions = DAOMongo.comprobarPunts(tauler);
+            //console.log("Punts blanques: " + puntuacions[0] + " Punts negres: " + puntuacions[1]);
+            partida.jugadors[0].fitxes = puntuacions[0];
+            partida.jugadors[1].fitxes = puntuacions[1];
+            //console.log(partida);
+            //Actualitzar el tauler i canviar de jugador 
             //console.log("Partida torn: " + partida.torn);
             partida.torn = (partida.torn === 'b')?'n':'b';
             //console.log("Partida torn: " + partida.torn);
-            db.collection('partides').updateOne({ _id: partida._id},{$set: {"torn": partida.torn}});             
-            // actualitzar el tauler 
-            db.collection('partides').updateOne({ _id: partida._id},{$set: {"tauler": tauler}});         
+            db.collection('partides').updateOne({ _id: partida._id},{$set: {"tauler": tauler,"torn":partida.torn,"jugadors.0.fitxes":partida.jugadors[0].fitxes,"jugadors.1.fitxes":partida.jugadors[1].fitxes}});         
+            response.write(JSON.stringify(partida));
             response.end();
           });
         });
@@ -313,7 +317,41 @@ static comprobarFila(fila)
   return fila;
 }// Fi de comprobar fila
       
+static comprobarPunts(tauler)
+{
+  let pb = 0;
+  let pn = 0;
+  for(let i = 0; i < 8;i++)
+  {
+    for(let j = 0; j < 8;j++)
+    {
+      if(tauler[i][j]=== 0)
+        pn++;
+      else if(tauler[i][j] === 1)
+        pb++;
+    }
+  }
+  return [pb,pn]
+}
 
+static esborraPartida(id,res)
+{
+  MongoClient.connect(cadenaConnexio,async function(err,client){
+    var db = client.db('partides'); 
+    // Esborrar la partida
+    let p = new Promise((resolver,reject)=>{
+        db.collection('partides').deleteOne({_id:id},function(err,result){
+          console.log("Partida esborrada " + id );
+          resolver(result);                
+        })          
+    });
+    // Afegir la fitxa a la casella de partida trobada en els index indicats
+    p.then(() => {
+      res.write("Partida: " + id + " Esborrada",'utf-8');
+      res.end();      
+    });
+  });
+}
 
 
 }//Fi de la classe

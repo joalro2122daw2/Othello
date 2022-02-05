@@ -144,13 +144,13 @@ function enviarFitxaBlanca(response,datapost,request)
 /* Envia en format JSON la partida amb l'id que s'extreu de la cookie del client */
 function consultaEstat(response,datapost,request)
 {
-  //Obtenir la cookie del client amb el nom del jugador i l'id de la partida
-  const cookieHeader = request.headers?.cookie;
-  let indexnom = cookieHeader.indexOf('=')+1;
-  let indexid = cookieHeader.lastIndexOf('=')+1;
-  let nom = cookieHeader.substr(indexnom,(indexid-4-indexnom));
-  let id = cookieHeader.substr(indexid);
-  DAOMongo.consultaEstado(nom,id,response);
+    //Obtenir la cookie del client amb el nom del jugador i l'id de la partida
+    const cookieHeader = request.headers?.cookie;
+    let indexnom = cookieHeader.indexOf('=')+1;
+    let indexid = cookieHeader.lastIndexOf('=')+1;
+    let nom = cookieHeader.substr(indexnom,(indexid-4-indexnom));
+    let id = cookieHeader.substr(indexid);
+    DAOMongo.consultaEstado(nom,id,response);
   //console.log("Cookie Nom: " + nom + " Id: " + id);
 }
 
@@ -185,6 +185,16 @@ function calculaRepercusions(response,datapost,request)
   DAOMongo.calculaRepercusions(id,response,fila,columna);
 }
 
+function finalitzar(response,datapost,request)
+{
+  console.log("manegador de la petició finalitzar s'ha cridat.");  
+  //Obtenir la cookie del client amb l'id de la partida
+  const cookieHeader = request.headers?.cookie;
+  let indexid = cookieHeader.lastIndexOf('=')
+  let id = cookieHeader.substr(indexid+1);
+  DAOMongo.esborraPartida(id,response);
+}
+
   exports.login = login;
   exports.enviarCSS = enviarCSS;
   exports.enviarSCRIPT = enviarSCRIPT;
@@ -196,5 +206,6 @@ function calculaRepercusions(response,datapost,request)
   exports.consultaEstat = consultaEstat;
   exports.fitxaPosada = fitxaPosada;
   exports.calculaRepercusions = calculaRepercusions;
+  exports.finalitzar = finalitzar;
 
   

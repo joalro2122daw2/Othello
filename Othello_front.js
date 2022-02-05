@@ -143,7 +143,20 @@ function consultaEstat()
                 let nomjugador = partida.jugadors[torn].nom;
                 lbCom.innerHTML = "Torn pel jugador: "+nomjugador;
                 lbCom.style.backgroundColor = "green";
-                console.log("Partida torn: " + partida.torn);
+                //console.log("Partida torn: " + partida.torn);
+                let fitxesb = partida.jugadors[0].fitxes;
+                let fitxesn = partida.jugadors[1].fitxes;
+                //console.log("Partida blancas: " + fitxesb + " Partida negres: " + fitxesn);
+                if(fitxesb + fitxesn < 64)
+                {
+                   document.getElementById("lbPunts").innerHTML = "Punts: <br> Blanques: " + fitxesb + "<br> Negres: " + fitxesn;
+                }
+                else
+                { 
+                    lbCom.innerHTML = "Fi de la partida";
+                    clearInterval(id);
+                    document.getElementById("lbPunts").innerHTML = "Guanyen les fitxes: " + ((fitxesb > fitxesn)?"blanques":"negres");
+                }
             }
             else
             {
@@ -301,10 +314,37 @@ function demanarRepercusions()
         let torn = (partida.torn === 'b')?0:1;
         let nomjugador = partida.jugadors[torn].nom;
         lbCom.innerHTML = "Torn pel jugador: "+nomjugador;
+        partida = JSON.parse(xhttp.response);
         }
     }
     xhttp.open("GET","http://localhost:8888/calculaRepercusions",true);
     xhttp.setRequestHeader("Cache-Control","no-cache, mustrevalidate")
     xhttp.onreadystatechange=func;
     xhttp.send();
+}
+
+
+function btSortir_clicked()
+{
+    let head = new Headers({"Content-Type":"text/plain"});
+    let init = {"method":'DELETE',
+                "headers":head,
+                "mode":'cors',
+                "cache":'default'
+                }
+    let request = new Request("http://localhost:8888/finalitzar",init);
+    fetch(request).then((response) =>{
+        if(response.ok)
+        {
+            response.text().then((resposta) =>{
+                console.log("Resposta: " + resposta);
+                document.getElementById("lbCom").innerHTML = "Partida finalitzada";
+                console.log(resposta);
+                clearInterval(id);
+            })
+        }
+        else{
+            console.log("Resposta no ng");
+        }
+    });
 }

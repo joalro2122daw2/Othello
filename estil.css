@@ -66,3 +66,19 @@ button:hover{
     background-color:red;
     width:10em;
 }
+
+#lbPunts{
+    position:absolute;
+    top:20%;
+    left:100%;
+    background-color:aqua;
+    color:blue;
+    width:10em;
+}
+
+#btSortir{
+    position:absolute;
+    top:0;
+    left:110%;
+    width: auto;
+}
