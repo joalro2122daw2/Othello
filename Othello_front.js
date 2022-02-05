@@ -1,16 +1,11 @@
-//const { enviarTauler } = require("./OthelloFunctions4");
-
-//const { enviarTauler } = require("./OthelloFunctions4");
-
 var tauler;
 var color = 'n';
 var ample;
 var alt;
 var partida;
-//var refresh = 10000;
-
 var id;
 
+/* Obté les mides de la pantalla */
 function iniciar()
 {
     alt = window.screen.availHeight;
@@ -26,13 +21,11 @@ function partidaUnJugador()
     let func = function(){
     if (xhttp.readyState==4 && xhttp.status==200) {
         let nomusu = document.getElementById("nombreusu").value; 
-        if(xhttp.responseText === "0") // No existeix partida amb un sol jugador
-            //console.log(nomusu);
+        if(xhttp.responseText === "0") // No existeix partida amb un sol jugador            
             afegirPartida(nomusu,null);
         else// Existeix una partida amb un sol jugador
         {
-            let idpartida = JSON.parse(xhttp.response)._id;
-            //console.log(JSON.parse(xhttp.response)._id);
+            let idpartida = JSON.parse(xhttp.response)._id;            
             afegirPartida(nomusu,idpartida);
         }
       } 
@@ -89,10 +82,7 @@ function demanarTauler()
         if(tauler)
             tauler.addEventListener("click",posarFixta);
         alt = window.screen.availHeight;
-        ample = window.screen.availWidth;
-        //console.log(ample);
-        //tauler.style.width = (ample/2.5).toString() + "px";
-        //tauler.style.height = (alt/2.5).toString() + "px";
+        ample = window.screen.availWidth;        
         id = setInterval(consultaEstat,1000);
         }
     } 
@@ -120,19 +110,18 @@ function consultaEstat()
             
             if(partida)
             {            
-                complet = partida.complerta;
-                //tauler = partida.tauler;
+                complet = partida.complerta;                
             }
             else
             {          
-            complet = getComplerta(xhttp.response);
-            //tauler = getTauler(xhttp.response);
+            complet = getComplerta(xhttp.response);            
             } 
 
             if(complet === 'false' || !complet)
             {
                 lbCom.innerHTML = "Esperant rival";
                 lbCom.style.backgroundColor = "yellow";
+                lbCom.style.color = "black";
                 return;
             }
             else if(complet)
@@ -141,12 +130,11 @@ function consultaEstat()
                 if(torn != 0 && torn != 1)//error d'conexio
                     return; 
                 let nomjugador = partida.jugadors[torn].nom;
-                lbCom.innerHTML = "Torn pel jugador: "+nomjugador;
+                lbCom.innerHTML = "Torn pel jugador: "+nomjugador + " amb: " + ((partida.torn === 'b')?'blanques':'negres');
                 lbCom.style.backgroundColor = "green";
-                //console.log("Partida torn: " + partida.torn);
+                lbCom.style.color = 'chartreuse';                
                 let fitxesb = partida.jugadors[0].fitxes;
-                let fitxesn = partida.jugadors[1].fitxes;
-                //console.log("Partida blancas: " + fitxesb + " Partida negres: " + fitxesn);
+                let fitxesn = partida.jugadors[1].fitxes;                
                 if(fitxesb + fitxesn < 64)
                 {
                    document.getElementById("lbPunts").innerHTML = "Punts: <br> Blanques: " + fitxesb + "<br> Negres: " + fitxesn;
@@ -162,10 +150,10 @@ function consultaEstat()
             {
                 lbCom.innerHTML = "Sense conexió";
                 lbCom.style.backgroundColor = "red";
+                lbCom.style.color = "black";
             }
             tauler = getTauler(xhttp.response);
-            pintaTauler(tauler);
-            //console.log("Tauler " + tauler);
+            pintaTauler(tauler);            
         }
     }
     xhttp.open("GET", "http://localhost:8888/consultaEstat", true);
@@ -173,8 +161,6 @@ function consultaEstat()
     xhttp.onreadystatechange=func;
     xhttp.send();
 }
-
-//{"_id":"nip444jfswnzgfo1d1tlb","complerta":false,"jugadors":[{"nom":"Jose Antonio","fitxes":2,"color":"b"}],"tauler":[[-1,-1,-1,-1,-1,-1,-1,-1],[-1,-1,-1,-1,-1,-1,-1,-1],[-1,-1,-1,-1,-1,-1,-1,-1],[-1,-1,-1,-1,-1,-1,-1,-1],[-1,-1,-1,-1,1,0,-1,-1],[-1,-1,-1,-1,0,1,-1,-1],[-1,-1,-1,-1,-1,-1,-1,-1],[-1,-1,-1,-1,-1,-1,-1,-1]]}
 
 /* Obté el camp complerta de la resposta rebuda corresponent al estat de la partida en curs */
 function getComplerta(resposta)
@@ -189,12 +175,13 @@ function getTauler(resposta)
     let inici = resposta.indexOf("tauler")+7;
     return(resposta.substr(inici+1,resposta.length-inici-2));
 }
+/* Obté el camp torn de la resposta rebuda corresponent al estat de la partida en curs */
 function getTorn(resposta)
 {
     let inici = resposta.indexOf("torn")+7;
     return(resposta.substr(inici+1,1));
 }
-
+/* Repinta el tauler segons el seu estat pasat com a argument */
 function pintaTauler(tauler)
 {    
     try
@@ -203,8 +190,7 @@ function pintaTauler(tauler)
         for(let i = 0; i < 8; i++)
         {
             for(let j = 0; j < 8; j++)
-            {
-                //console.log(taulerarray[i][j]);
+            {                
                 pintarFitxa(i+1,j+1,taulerarray[i][j]);
             }
         }
@@ -214,16 +200,12 @@ function pintaTauler(tauler)
 
     }
 }
-
+/* Pinta a la casella de fila i i columna j, la fitxa de color c */
 function pintarFitxa(i,j,c)
 {
-    //console.log("Entra en pintar fitxa");
-    //if(c === '-1')
     if(c < 0)
         return;
     let fitxa;
-    //console.log("Pintar fitxa: " + i + "  "+ j + "  "+c);
-    //if(c === '1')
     if(c > 0)
     {        
         fitxa = new Image(ample/20,alt/12);
@@ -234,8 +216,7 @@ function pintarFitxa(i,j,c)
         fitxa = new Image(ample/20,alt/12);
         fitxa.src = 'imatges/fitxa-negra.png'; 
     }   
-    let nomcasella = i.toString()+j.toString();
-    //console.log("Nom casella: " + nomcasella);
+    let nomcasella = i.toString()+j.toString();    
     let casella = document.getElementById(nomcasella);
     if(casella.children.length > 0)
         casella.removeChild(casella.firstChild);
@@ -243,6 +224,8 @@ function pintarFitxa(i,j,c)
 }
 
 
+/* Fa comprovacions i si tot es correcte, dibuixa la fitxa a la casella on el
+   jugador a fet click i crida a enviarFitxa per a desar-la al servidor */
 function posarFixta(ev)
 {
     if(!partida ) // Si la partida no ha començat, o ja s'ha posat una fitxa, no fer res
@@ -276,8 +259,7 @@ function posarFixta(ev)
             fitxa.src = 'imatges/fitxa-negra.png'; 
             ev.target.appendChild(fitxa);
             enviarFitxa(i,j,0);
-        }
-        //Enviar tauler al servidor        
+        }      
     }   
 }
 
@@ -338,7 +320,10 @@ function btSortir_clicked()
         {
             response.text().then((resposta) =>{
                 console.log("Resposta: " + resposta);
-                document.getElementById("lbCom").innerHTML = "Partida finalitzada";
+                let lbCom = document.getElementById("lbCom"); 
+                lbCom.innerHTML = "Partida finalitzada";
+                lbCom.style.backgroundColor = "yellow";
+                lbCom.style.color = "black";
                 console.log(resposta);
                 clearInterval(id);
             })

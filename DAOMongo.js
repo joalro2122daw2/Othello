@@ -14,8 +14,7 @@ class DAOMongo{
             var db = client.db('partides');
             db.collection('partides').aggregate([{$project:{count:{$size:"$jugadors"}}}]).toArray(function(err,result){                                  
               if(result[0])
-              {
-                //console.log(result[0].count); 
+              {                
                 if(result[0].count === 1)
                   response.write(JSON.stringify(result[0]));
                 else
@@ -50,8 +49,7 @@ class DAOMongo{
           var db = client.db('partides'); 
           /* Obtenir la partida amb un jugador */
           let p = new Promise((resolver,reject)=>{
-              db.collection('partides').findOne({_id:idpartida},function(err,result){
-                //console.log("Resultado: " + result._id );
+              db.collection('partides').findOne({_id:idpartida},function(err,result){                
                 resolver(result);                
               })          
           });
@@ -72,8 +70,7 @@ class DAOMongo{
                     let resposta = "";
                     result.forEach(x => resposta += JSON.stringify(x));
                     resolver(resposta);                    
-                }))
-                //console.log("Promise: " + Object.keys(promise));                
+                }))                               
             });
             p.then((resposta)=>{
               response.write(resposta);
@@ -83,33 +80,7 @@ class DAOMongo{
 
       /* Obté la partida corresponent al id passat com a argument i la envia en format json */
       static consultaEstado(nom,id,response)
-      { 
-        /*
-        //const mongo = require("mongodb").MongoClient;
-        //const config = require("./config.json");
-        let _client_; // <-- external variable
-        MongoClient.connect(cadenaConnexio).then(client => {
-            _client_ = client; // <-- assing real client to it
-            const db = client.db("partides");
-            return db;
-        }).then(function(db){
-          db.collection('partides').findOne({_id:id},function(err,result){
-              console.log("Resultat: " + result);
-              return result;
-            })
-        })
-        .then(function (result) {
-            if(result)
-              response.write(JSON.stringify(result));
-            response.end();
-        }).then(() => {
-            _client_.close(); // <-- close connection
-        }).catch(err => {
-            console.error(err);
-        });
-    }
-    */
-
+      {         
         MongoClient.connect(cadenaConnexio,function(err,client){
           var db = client.db('partides'); 
           // Obtenir la partida amb un jugador 
@@ -126,14 +97,12 @@ class DAOMongo{
       /* Afegeix la fitxa pasada pasada com a tercer argument al la casella amb la fila i columna pasades
          com a primer i segon arguments a la partida amb id passat com a quart argument */
       static afegirFitxa(fila,columna,color,id,response)
-      {
-        //console.log("Id de la partida: " + id);
+      {        
         MongoClient.connect(cadenaConnexio,async function(err,client){
           var db = client.db('partides'); 
           /* Obtenir la partida amb un jugador */
           let p = new Promise((resolver,reject)=>{
-              db.collection('partides').findOne({_id:id},function(err,result){
-                //console.log("Resultado: " + result._id );
+              db.collection('partides').findOne({_id:id},function(err,result){                
                 resolver(result);                
               })          
           });
@@ -146,11 +115,7 @@ class DAOMongo{
     }
 
     static calculaRepercusions(id,response,fila,columna)
-    {
-      
-      //Amb promise explicita
-      //console.log("Fila: " + fila + " Columna: " + columna)
-        //console.log("Id de la partida: " + id);
+    {            
         MongoClient.connect(cadenaConnexio,async function(err,client){
           var db = client.db('partides'); 
           // Obtenir la partida amb un jugador 
@@ -161,103 +126,190 @@ class DAOMongo{
               })          
           });
           // Afegir la fitxa a la casella de partida trobada en els index indicats
-          p.then((partida) => {
-            //console.log("Partida en DAO: " + Object.keys(partida));
-            let tauler = partida.tauler;
-            //console.log("Tauler en DAO: " + tauler);
-            tauler = DAOMongo.comprobarDiagonalI(tauler,fila,columna);
-            tauler = DAOMongo.comprobarDiagonalD(tauler,fila,columna);
+          p.then((partida) => {            
+            let tauler = partida.tauler;                        
             tauler = DAOMongo.comprobarFiles(tauler,fila);
             tauler = DAOMongo.comprobarColumnes(tauler,columna);
-            let puntuacions = DAOMongo.comprobarPunts(tauler);
-            //console.log("Punts blanques: " + puntuacions[0] + " Punts negres: " + puntuacions[1]);
+            tauler = DAOMongo.comprobarDiagonalI(tauler,fila,columna);
+            tauler = DAOMongo.comprobarDiagonalD(tauler,fila,columna);
+            let puntuacions = DAOMongo.comprobarPunts(tauler);            
             partida.jugadors[0].fitxes = puntuacions[0];
-            partida.jugadors[1].fitxes = puntuacions[1];
-            //console.log(partida);
-            //Actualitzar el tauler i canviar de jugador 
-            //console.log("Partida torn: " + partida.torn);
-            partida.torn = (partida.torn === 'b')?'n':'b';
-            //console.log("Partida torn: " + partida.torn);
+            partida.jugadors[1].fitxes = puntuacions[1];            
+            //Actualitzar el tauler i canviar de jugador             
+            partida.torn = (partida.torn === 'b')?'n':'b';            
             db.collection('partides').updateOne({ _id: partida._id},{$set: {"tauler": tauler,"torn":partida.torn,"jugadors.0.fitxes":partida.jugadors[0].fitxes,"jugadors.1.fitxes":partida.jugadors[1].fitxes}});         
             response.write(JSON.stringify(partida));
             response.end();
           });
         });
-        
-        
-       /*
-       //Sense promise explicita 
-        MongoClient.connect(cadenaConnexio,async function(err,client){
-          var db = client.db('partides'); 
-          // Obtenir la partida amb un jugador 
-              db.collection('partides').findOne({_id:id},function(err,result){
-                console.log("Resultado: " + result._id );              
-                       
-          // Afegir la fitxa a la casella de partida trobada en els index indicats
-            //console.log("Partida en DAO: " + Object.keys(partida));
-            let tauler = result.tauler;
-            //console.log("Tauler en DAO: " + tauler);
-            tauler = DAOMongo.comprobarFiles(tauler,fila);
-            //canviar de jugador 
-            //console.log("Partida torn: " + partida.torn);
-            result.torn = (result.torn === 'b')?'n':'b';
-            //console.log("Partida torn: " + partida.torn);
-            db.collection('partides').updateOne({ _id: result._id},{$set: {"torn": result.torn}});             
-            // actualitzar el tauler 
-            db.collection('partides').updateOne({ _id: result._id},{$set: {"tauler": tauler}});         
-            response.end();
-              });
-        });
-        */
      }
       
+     //----------------------------------------------------------------------------
+        /* Considerant no més la fila, columna i diagonals on s'ha posat la fitxa*/
+     //----------------------------------------------------------------------------
+
+    /*
+    static comprobarFiles(tauler,indexfila)
+    {
+        let fila = tauler[indexfila];
+        fila = DAOMongo.comprobarFila(fila);
+      return tauler;
+    }
+
+    static comprobarColumnes(tauler,indexcolumna)
+    {
+      let columna = [];
+      for(let i = 0; i < 8;i++)
+      {
+        columna.push(tauler[i][indexcolumna]);
+      }
+      columna = DAOMongo.comprobarFila(columna);
+      for(let i = 0; i < 8;i++)
+      {
+        tauler[i][indexcolumna] = columna[i];
+      }
+      return tauler;
+    }
+
+    static comprobarDiagonalD(tauler,indexfila,indexcolumna)
+    {
+      let diagonal = [];
+      //Anar a la primera fila i columna de la diagonal
+      let fila = indexfila;
+      let columna = indexcolumna;
+      while(fila > 0 && columna > 0)
+      {
+        fila--;
+        columna--;
+      }
+      //console.log("Fila: " + fila + " Columna: " + columna);
+      //Ficar la diagonal en una array
+      let inicifila = fila;
+      let inicicolumna = columna;
+      while(inicifila < 8 && inicicolumna < 8)
+      {
+        diagonal.push(tauler[inicifila][inicicolumna]);
+        inicifila++;
+        inicicolumna++;
+      }
+      DAOMongo.comprobarFila(diagonal);
+      for(let i = 0; i < diagonal.length;i++,columna++,fila++)
+      {
+        tauler[fila][columna] = diagonal[i]; 
+      }
+      return tauler;
+    }
+      
+
+    static comprobarDiagonalI(tauler,indexfila,indexcolumna)
+    {
+      let diagonal = [];
+      //Anar a la primera fila i columna de la diagonal
+      let fila = indexfila;
+      let columna = indexcolumna;
+      while(fila > 0 && columna < 8)
+      {
+        fila--;
+        columna++;
+      }
+      //console.log("Fila: " + fila + " Columna: " + columna);
+      //Ficar la diagonal en una array
+      let inicifila = fila;
+      let inicicolumna = columna;
+      while(inicifila < 8 && inicicolumna > 0)
+      {
+        diagonal.push(tauler[inicifila][inicicolumna]);
+        inicifila++;
+        inicicolumna--;
+      }
+      DAOMongo.comprobarFila(diagonal);
+      for(let i = 0; i < diagonal.length;i++,columna--,fila++)
+      {
+        tauler[fila][columna] = diagonal[i]; 
+      }
+      return tauler;
+    }
+
+    static comprobarFila(fila)
+    {
+      for(let i = 0; i < fila.length-1;i++)
+      {
+        let casella = fila[i];
+        if(casella < 0)
+          continue;
+        for(let j = i+1; j < fila.length;j++)
+        {
+          let casella2 = fila[j];
+          if(casella2 < 0)
+            break;
+          if(casella === casella2)
+          {
+            for(let n = i; n < j;n++)
+              fila[n] = casella;
+          }
+        }
+      }
+      return fila;
+    }// Fi de comprobar fila
+    */
+
+//---------------------------------------------------------------------------
+          /* Considerant totes les files, columnes i diagonals */
+//---------------------------------------------------------------------------
+
 static comprobarFiles(tauler,indexfila)
 {
-    let fila = tauler[indexfila];
+  for(let i = 0; i < 8; i++)
+  {
+    let fila = tauler[i];
     fila = DAOMongo.comprobarFila(fila);
+  }
   return tauler;
 }
 
 static comprobarColumnes(tauler,indexcolumna)
 {
-  let columna = [];
-  for(let i = 0; i < 8;i++)
+  for(let j = 0; j < 8; j++)
   {
-    columna.push(tauler[i][indexcolumna]);
-  }
-  columna = DAOMongo.comprobarFila(columna);
-  for(let i = 0; i < 8;i++)
-  {
-    tauler[i][indexcolumna] = columna[i];
+    let columna = [];
+    for(let i = 0; i < 8;i++)
+    {
+      columna.push(tauler[i][j]);
+    }
+    columna = DAOMongo.comprobarFila(columna);
+    for(let i = 0; i < 8;i++)
+    {
+      tauler[i][j] = columna[i];
+    }
   }
   return tauler;
 }
 
 static comprobarDiagonalD(tauler,indexfila,indexcolumna)
 {
-  let diagonal = [];
-  //Anar a la primera fila i columna de la diagonal
-  let fila = indexfila;
-  let columna = indexcolumna;
-  while(fila > 0 && columna > 0)
+  //Comprovar les 6 primeres diagonals a la dreta que comencen a la columna 0
+  for(let i = 0; i < 6; i++)
   {
-    fila--;
-    columna--;
+    let diagonal = [];
+    let columna = 0;
+    for(let fila = i;fila < 8;fila++,columna++)
+     diagonal.push(tauler[fila][columna]);
+    diagonal = DAOMongo.comprobarFila(diagonal);
+    columna = 0;
+    for(let fila = i;fila < 8;fila++,columna++)
+     tauler[fila][columna] = diagonal[columna];
   }
-  //console.log("Fila: " + fila + " Columna: " + columna);
-  //Ficar la diagonal en una array
-  let inicifila = fila;
-  let inicicolumna = columna;
-  while(inicifila < 8 && inicicolumna < 8)
+  //Comprovar les 5 diagonals que comencen a la primera fila
+  for(let j = 1;j < 6;j++)
   {
-    diagonal.push(tauler[inicifila][inicicolumna]);
-    inicifila++;
-    inicicolumna++;
-  }
-  DAOMongo.comprobarFila(diagonal);
-  for(let i = 0; i < diagonal.length;i++,columna++,fila++)
-  {
-    tauler[fila][columna] = diagonal[i]; 
+    let diagonal = [];
+    let fila = 0;
+    for(let columna = j; columna<8;columna++,fila++)
+      diagonal.push(tauler[fila][columna])
+    diagonal = DAOMongo.comprobarFila(diagonal);
+    fila = 0;
+    for(let columna = j;columna < 8;columna++,fila++)
+     tauler[fila][columna] = diagonal[fila];
   }
   return tauler;
 }
@@ -265,35 +317,32 @@ static comprobarDiagonalD(tauler,indexfila,indexcolumna)
 
 static comprobarDiagonalI(tauler,indexfila,indexcolumna)
 {
-  let diagonal = [];
-  //Anar a la primera fila i columna de la diagonal
-  let fila = indexfila;
-  let columna = indexcolumna;
-  while(fila > 0 && columna < 8)
+  //Comprovar les 6 primeres diagonals a la esquerra que comencen a la columna 8
+  for(let i = 0; i < 6; i++)
   {
-    fila--;
-    columna++;
+    let diagonal = [];
+    let columna = 7;
+    for(let fila = i;fila < 8;fila++,columna--)
+     diagonal.push(tauler[fila][columna]);
+    diagonal = DAOMongo.comprobarFila(diagonal);
+    columna = 7;
+    for(let fila = i;fila < 8;fila++,columna--)
+     tauler[fila][columna] = diagonal[7-columna];
   }
-  //console.log("Fila: " + fila + " Columna: " + columna);
-  //Ficar la diagonal en una array
-  let inicifila = fila;
-  let inicicolumna = columna;
-  while(inicifila < 8 && inicicolumna > 0)
+  //Comprovar les 5 diagonals que comencen a la primera fila
+  for(let j = 7;j > 2;j--)
   {
-    diagonal.push(tauler[inicifila][inicicolumna]);
-    inicifila++;
-    inicicolumna--;
-  }
-  DAOMongo.comprobarFila(diagonal);
-  for(let i = 0; i < diagonal.length;i++,columna--,fila++)
-  {
-    tauler[fila][columna] = diagonal[i]; 
+    let diagonal = [];
+    let fila = 0;
+    for(let columna = j; columna>0;columna--,fila++)
+      diagonal.push(tauler[fila][columna])
+    diagonal = DAOMongo.comprobarFila(diagonal);
+    fila = 0;
+    for(let columna = j;columna > 0;columna--,fila++)
+     tauler[fila][columna] = diagonal[fila];
   }
   return tauler;
 }
-
-
-
 
 static comprobarFila(fila)
 {
@@ -316,7 +365,11 @@ static comprobarFila(fila)
   }
   return fila;
 }// Fi de comprobar fila
-      
+ 
+
+//-----------------------------------------------
+
+
 static comprobarPunts(tauler)
 {
   let pb = 0;

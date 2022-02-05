@@ -18,7 +18,6 @@ td > *{
 #tauler{
     width:800px;
     height:800px;
-    /*background-color: floralwhite;*/
 }
 
 h1{
@@ -69,7 +68,7 @@ button:hover{
 
 #lbPunts{
     position:absolute;
-    top:20%;
+    top:30%;
     left:100%;
     background-color:aqua;
     color:blue;
