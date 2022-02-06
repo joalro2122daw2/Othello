@@ -39,9 +39,7 @@ function enviarCSS(response,datapost,request)
 function enviarSCRIPT(response,datapost,request)
 {
     fs.readFile('./Othello_front.js', function (err, sortida) {
-      response.writeHead(200, {
-          "Content-Type": "text/javascript"
-      });
+      response.writeHead(200, {"Content-Type": "text/javascript"});
       console.log("Enviat script");
       response.write(sortida);
       response.end();

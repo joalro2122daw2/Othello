@@ -10,21 +10,22 @@ class DAOMongo{
         /* Cerca una partida amb un sol jugador, si existeix, envia les dades de la partida i si no, envia 0 */
         static partidaUnJugador(response)
         {
+          response.writeHead(200, {"Content-Type": "application/json"});       
           MongoClient.connect(cadenaConnexio,function(err,client){
-            var db = client.db('partides');
+            var db = client.db('partides');            
             db.collection('partides').aggregate([{$project:{count:{$size:"$jugadors"}}}]).toArray(function(err,result){                                  
               if(result[0])
               {                
                 if(result[0].count === 1)
                   response.write(JSON.stringify(result[0]));
                 else
-                  response.write("0");                         
+                  response.write(JSON.stringify("0"));                         
               }
               else
               {
                 response.write("0");
               }
-              client.close();
+              client.close();              
               response.end();    
             });
           });
@@ -73,6 +74,7 @@ class DAOMongo{
                 }))                               
             });
             p.then((resposta)=>{
+              response.writeHead(200, {"Content-Type": "application/json"});       
               response.write(resposta);
               response.end();});
       });
@@ -86,7 +88,8 @@ class DAOMongo{
           // Obtenir la partida amb un jugador 
               db.collection('partides').findOne({_id:id},function(err,result){
                 //console.log("Resultado: " + result._id );
-                client.close();           
+                client.close();    
+                response.writeHead(200, {"Content-Type": "application/json"});       
                 response.write(JSON.stringify(result));
                 response.end();   
               })          
@@ -127,23 +130,36 @@ class DAOMongo{
           });
           // Afegir la fitxa a la casella de partida trobada en els index indicats
           p.then((partida) => {            
-            let tauler = partida.tauler;                        
+            let tauler = partida.tauler;    
+            /*                    
             tauler = DAOMongo.comprobarFiles(tauler,fila);
+            tauler = DAOMongo.comprobarDiagonalD(tauler,fila,columna);
             tauler = DAOMongo.comprobarColumnes(tauler,columna);
             tauler = DAOMongo.comprobarDiagonalI(tauler,fila,columna);
-            tauler = DAOMongo.comprobarDiagonalD(tauler,fila,columna);
+            */
+            DAOMongo.comprovarTot(tauler);            
             let puntuacions = DAOMongo.comprobarPunts(tauler);            
             partida.jugadors[0].fitxes = puntuacions[0];
             partida.jugadors[1].fitxes = puntuacions[1];            
             //Actualitzar el tauler i canviar de jugador             
             partida.torn = (partida.torn === 'b')?'n':'b';            
             db.collection('partides').updateOne({ _id: partida._id},{$set: {"tauler": tauler,"torn":partida.torn,"jugadors.0.fitxes":partida.jugadors[0].fitxes,"jugadors.1.fitxes":partida.jugadors[1].fitxes}});         
+            response.writeHead(200, {"Content-Type": "application/json"});       
             response.write(JSON.stringify(partida));
             response.end();
           });
         });
      }
       
+     static comprovarTot(tauler)
+     {
+      tauler = DAOMongo.comprobarDiagonalD(tauler);
+      tauler = DAOMongo.comprobarDiagonalI(tauler);  
+      tauler = DAOMongo.comprobarFiles(tauler);
+      tauler = DAOMongo.comprobarColumnes(tauler);    
+     }
+     
+
      //----------------------------------------------------------------------------
         /* Considerant no més la fila, columna i diagonals on s'ha posat la fitxa*/
      //----------------------------------------------------------------------------

@@ -4,6 +4,7 @@ var ample;
 var alt;
 var partida;
 var id;
+var ip = "192.168.1.41";
 
 /* Obté les mides de la pantalla */
 function iniciar()
@@ -30,7 +31,7 @@ function partidaUnJugador()
         }
       } 
     }
-    xhttp.open("GET", "http://localhost:8888/comprobarPartidaDisponible", true);
+    xhttp.open("GET", "http://"+ip+":8888/comprobarPartidaDisponible", true);
     xhttp.setRequestHeader("Cache-Control","no-cache, mustrevalidate")
     xhttp.onreadystatechange=func;
     xhttp.send();
@@ -58,7 +59,7 @@ function afegirPartida(nomjugador,idpartida)
         demanarTauler();
         } 
     }
-    xhttp.open("POST", "http://localhost:8888/validarUser", true);
+    xhttp.open("POST", "http://"+ip+":8888/validarUser", true);
     xhttp.setRequestHeader("Cache-Control","no-cache, mustrevalidate")
     xhttp.onreadystatechange=func;
     xhttp.send(params);
@@ -86,7 +87,7 @@ function demanarTauler()
         id = setInterval(consultaEstat,1000);
         }
     } 
-    xhttp.open("GET", "http://localhost:8888/tauler", true);
+    xhttp.open("GET", "http://"+ip+":8888/tauler", true);
     xhttp.setRequestHeader("Cache-Control","no-cache, mustrevalidate")
     xhttp.onreadystatechange=func;
     xhttp.send();
@@ -104,7 +105,7 @@ function consultaEstat()
             let lbCom = document.getElementById("lbCom");
             try
             {
-                partida = JSON.parse(xhttp.response);
+                partida = JSON.parse(xhttp.responseText);
             }
             catch{}
             
@@ -114,7 +115,7 @@ function consultaEstat()
             }
             else
             {          
-            complet = getComplerta(xhttp.response);            
+              complet = getComplerta(xhttp.responseText);            
             } 
 
             if(complet === 'false' || !complet)
@@ -156,8 +157,9 @@ function consultaEstat()
             pintaTauler(tauler);            
         }
     }
-    xhttp.open("GET", "http://localhost:8888/consultaEstat", true);
-    xhttp.setRequestHeader("Cache-Control","no-cache, mustrevalidate")
+    xhttp.open("GET", "http://"+ip+":8888/consultaEstat", true);
+    xhttp.setRequestHeader("Cache-Control","no-cache, mustrevalidate");
+    xhttp.setRequestHeader("Content-type","text/html");
     xhttp.onreadystatechange=func;
     xhttp.send();
 }
@@ -276,7 +278,7 @@ function enviarFitxa(i,j,color)
         demanarRepercusions();
         } 
     }
-    xhttp.open("PUT", "http://localhost:8888/fitxaPosada", true);
+    xhttp.open("PUT", "http://"+ip+":8888/fitxaPosada", true);
     xhttp.setRequestHeader("Cache-Control","no-cache, mustrevalidate")
     xhttp.onreadystatechange=func;
     xhttp.send(params);
@@ -296,10 +298,10 @@ function demanarRepercusions()
         let torn = (partida.torn === 'b')?0:1;
         let nomjugador = partida.jugadors[torn].nom;
         lbCom.innerHTML = "Torn pel jugador: "+nomjugador;
-        partida = JSON.parse(xhttp.response);
+        partida = JSON.parse(xhttp.responseText);
         }
     }
-    xhttp.open("GET","http://localhost:8888/calculaRepercusions",true);
+    xhttp.open("GET","http://"+ip+":8888/calculaRepercusions",true);
     xhttp.setRequestHeader("Cache-Control","no-cache, mustrevalidate")
     xhttp.onreadystatechange=func;
     xhttp.send();
@@ -314,7 +316,7 @@ function btSortir_clicked()
                 "mode":'cors',
                 "cache":'default'
                 }
-    let request = new Request("http://localhost:8888/finalitzar",init);
+    let request = new Request("http://"+ip+":8888/finalitzar",init);
     fetch(request).then((response) =>{
         if(response.ok)
         {
